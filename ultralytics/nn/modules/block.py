@@ -945,3 +945,24 @@ class SCDown(nn.Module):
             (torch.Tensor): Output tensor after applying the SCDown module.
         """
         return self.cv2(self.cv1(x))
+
+
+
+import torch
+import torch.nn as nn
+import torchvision.models as models
+
+class MobileNetLayer(nn.Module):
+    def __init__(self, out_channels, block_num, stride):
+        super(MobileNetLayer, self).__init__()
+        mobilenet = models.mobilenet_v2(pretrained=True).features
+        self.block = mobilenet[block_num]
+        self.stride = stride
+
+        # Optionally, modify or add layers if required
+        self.conv = nn.Conv2d(mobilenet[block_num - 1].out_channels, out_channels, kernel_size=1, stride=stride)
+
+    def forward(self, x):
+        x = self.block(x)
+        x = self.conv(x)
+        return x

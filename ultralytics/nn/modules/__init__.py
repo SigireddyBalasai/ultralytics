@@ -53,6 +53,7 @@ from .block import (
     RepVGGDW,
     ResNetLayer,
     SCDown,
+    MobileNetLayer,
 )
 from .conv import (
     CBAM,
@@ -68,6 +69,7 @@ from .conv import (
     LightConv,
     RepConv,
     SpatialAttention,
+    MobilenetConv
 )
 from .head import OBB, Classify, Detect, Pose, RTDETRDecoder, Segment, WorldDetect, v10Detect
 from .transformer import (
@@ -150,4 +152,5 @@ __all__ = (
     "Attention",
     "PSA",
     "SCDown",
+    "MobileNetLayer",
 )

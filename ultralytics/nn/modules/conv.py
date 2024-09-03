@@ -21,6 +21,7 @@ __all__ = (
     "CBAM",
     "Concat",
     "RepConv",
+    "MobilenetV2",
 )
 
 
@@ -329,3 +330,22 @@ class Concat(nn.Module):
     def forward(self, x):
         """Forward pass for the YOLOv8 mask Proto module."""
         return torch.cat(x, self.d)
+
+class MobilenetConv(nn.Module):
+    """MobileNetV2 Convolutional layer."""
+
+    def __init__(self, c1, c2, k=3, s=1, p=None, g=1, act=True):
+        """Initializes MobileNetV2 Convolutional layer with given parameters."""
+        super().__init__()
+        self.dw_conv = nn.Conv2d(c1, c1, k, s, autopad(k, p), groups=c1, bias=False)
+        self.pw_conv = nn.Conv2d(c1, c2, 1, 1, 0, bias=False)
+        self.bn = nn.BatchNorm2d(c2)
+        self.act = nn.SiLU() if act is True else act if isinstance(act, nn.Module) else nn.Identity()
+
+    def forward(self, x):
+        """Applies depth-wise convolution, point-wise convolution, batch normalization and activation to input tensor."""
+        x = self.dw_conv(x)
+        x = self.pw_conv(x)
+        x = self.bn(x)
+        x = self.act(x)
+        return x
