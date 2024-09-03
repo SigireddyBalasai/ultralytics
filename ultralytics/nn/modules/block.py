@@ -970,11 +970,11 @@ class MobileNetBackbone(nn.Module):
             '6': mobilenet[6:7],  # Seventh block
             '7': mobilenet[7:8]    # Eighth block
         })
+        print(self.backbone)
 
     def forward(self, x):
         outputs = {}
         for key, layer in self.backbone.items():
             x = layer(x)
-            print(f"key is {key} and shape is {x}")
             outputs[key] = x
         return outputs
