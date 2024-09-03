@@ -1,5 +1,3 @@
-# RT-DETR with MobileNet Backbone
-
 nc: 80  # Number of classes
 
 scales:  # Model compound scaling constants
@@ -7,17 +5,18 @@ scales:  # Model compound scaling constants
 
 backbone:
   # [from, repeats, module, args]
-  - [-1, 1, MobileNetLayer, [32, 1, 2]]   # First layer, similar to ResNetLayer 0
-  - [-1, 1, MobileNetLayer, [16, 1, 1]]   # Similar to ResNetLayer 1
-  - [-1, 1, MobileNetLayer, [24, 2, 2]]   # Similar to ResNetLayer 2
-  - [-1, 1, MobileNetLayer, [32, 3, 2]]   # Similar to ResNetLayer 3
-  - [-1, 1, MobileNetLayer, [64, 4, 2]]   # Similar to ResNetLayer 4
-  - [-1, 1, MobileNetLayer, [96, 3, 1]]   # Additional MobileNet layers
-  - [-1, 1, MobileNetLayer, [160, 3, 2]]  # Additional MobileNet layers
-  - [-1, 1, MobileNetLayer, [320, 1, 1]]  # Additional MobileNet layers
+  - [-1, 1, MobileNetLayer, [32, 0, 2]]   # MobileNet layer 0
+  - [-1, 1, MobileNetLayer, [16, 1, 1]]   # MobileNet layer 1
+  - [-1, 1, MobileNetLayer, [24, 2, 2]]   # MobileNet layer 2
+  - [-1, 1, MobileNetLayer, [32, 4, 2]]   # MobileNet layer 3
+  - [-1, 1, MobileNetLayer, [64, 7, 2]]   # MobileNet layer 4
+  - [-1, 1, MobileNetLayer, [96, 11, 1]]  # MobileNet layer 5
+  - [-1, 1, MobileNetLayer, [160, 14, 2]] # MobileNet layer 6
+  - [-1, 1, MobileNetLayer, [320, 18, 1]] # MobileNet layer 7
 
 head:
-  - [-1, 1, Conv, [256, 1, 1, None, 1, 1, False]]  # Head layers remain unchanged
+  # [from, repeats, module, args]
+  - [-1, 1, Conv, [256, 1, 1, None, 1, 1, False]]  # Head layers
   - [-1, 1, AIFI, [1024, 8]]
   - [-1, 1, Conv, [256, 1, 1]]
   - [-1, 1, nn.Upsample, [None, 2, "nearest"]]

@@ -953,14 +953,12 @@ import torch.nn as nn
 import torchvision.models as models
 
 class MobileNetLayer(nn.Module):
-    def __init__(self, out_channels, block_num, stride):
+    def __init__(self, out_channels, block_num, stride=1):
         super(MobileNetLayer, self).__init__()
         mobilenet = models.mobilenet_v2(pretrained=True).features
         self.block = mobilenet[block_num]
+        self.conv = nn.Conv2d(self.block.out_channels, out_channels, kernel_size=1, stride=stride)
         self.stride = stride
-
-        # Optionally, modify or add layers if required
-        self.conv = nn.Conv2d(mobilenet[block_num - 1].out_channels, out_channels, kernel_size=1, stride=stride)
 
     def forward(self, x):
         x = self.block(x)
