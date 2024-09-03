@@ -956,7 +956,7 @@ class MobileNetLayer(nn.Module):
     def __init__(self, out_channels, block_num, stride=1):
         super(MobileNetLayer, self).__init__()
         mobilenet = models.mobilenet_v2(pretrained=True).features
-        self.block = mobilenet[block_num]
+        self.block = mobilenet[:block_num]
         self.conv = nn.Conv2d(self.block.out_channels, out_channels, kernel_size=1, stride=stride)
         self.stride = stride
 
