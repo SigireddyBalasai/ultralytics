@@ -956,21 +956,40 @@ import torch
 import torch.nn as nn
 import torchvision.models as models
 
+
 class MobileNetBackbone(nn.Module):
     def __init__(self, pretrained=True):
         super(MobileNetBackbone, self).__init__()
         mobilenet = models.mobilenet_v2(pretrained=pretrained).features
+        
         self.backbone = nn.ModuleDict({
             '0': mobilenet[:1],  # First block
-            '1': mobilenet[1:2],  # Second block
-            '2': mobilenet[2:3],  # Third block
-            '3': mobilenet[3:4],  # Fourth block
-            '4': mobilenet[4:5],  # Fifth block
-            '5': mobilenet[5:6],  # Sixth block
-            '6': mobilenet[6:7],  # Seventh block
-            '7': mobilenet[7:8]    # Eighth block
+            '1': nn.Sequential(
+                mobilenet[1:2],
+                nn.Conv2d(in_channels=16, out_channels=64, kernel_size=3, stride=1, padding=1)
+            ),  # Second block with channel matching
+            '2': nn.Sequential(
+                mobilenet[2:3],
+                nn.Conv2d(in_channels=24, out_channels=128, kernel_size=3, stride=1, padding=1)
+            ),  # Third block with channel matching
+            '3': nn.Sequential(
+                mobilenet[3:4],
+                nn.Conv2d(in_channels=32, out_channels=256, kernel_size=3, stride=1, padding=1)
+            ),  # Fourth block with channel matching
+            '4': nn.Sequential(
+                mobilenet[4:5],
+                nn.Conv2d(in_channels=64, out_channels=512, kernel_size=3, stride=1, padding=1)
+            ),  # Fifth block with channel matching
+            '5': nn.Sequential(
+                mobilenet[5:6],
+                nn.Conv2d(in_channels=96, out_channels=1024, kernel_size=3, stride=1, padding=1)
+            ),  # Sixth block with channel matching
+            '6': nn.Sequential(
+                mobilenet[6:7],
+                nn.Conv2d(in_channels=160, out_channels=1024, kernel_size=3, stride=1, padding=1)
+            ),  # Seventh block with channel matching
+            '7': mobilenet[7:8]  # Eighth block, assuming no need for additional convolution
         })
-        print(self.backbone)
 
     def forward(self, x):
         outputs = {}
