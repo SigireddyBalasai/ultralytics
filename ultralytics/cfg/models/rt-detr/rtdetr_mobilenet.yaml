@@ -1,7 +1,4 @@
-nc: 80  # Number of classes
-
-scales:  # Model compound scaling constants
-  l: [1.00, 1.00, 1024]
+# Configuration for RT-DETR with MobileNetV2 backbone
 
 nc: 80  # Number of classes
 
@@ -9,54 +6,27 @@ scales:  # Model compound scaling constants
   l: [1.00, 1.00, 1024]
 
 backbone:
-  # [from, repeats, module, args]
-  - [-1, 1, MobileNetLayer, [64, 0, 2]]   # MobileNet layer 0
-  - [-1, 1, MobileNetLayer, [64, 1, 1]]   # MobileNet layer 1
-  - [-1, 1, MobileNetLayer, [128, 2, 2]]  # MobileNet layer 2
-  - [-1, 1, MobileNetLayer, [256, 4, 2]]  # MobileNet layer 3
-  - [-1, 1, MobileNetLayer, [512, 3, 2]]  # MobileNet layer 4
+  # Use MobileNetV2 directly as the backbone
+  - [-1, 1, MobileNetBackbone, []]  # MobileNetV2 Backbone
 
 head:
   # [from, repeats, module, args]
   - [-1, 1, Conv, [256, 1, 1, None, 1, 1, False]]  # Head layers
-  - [-1, 1, AIFI, [1024, 8]]                       # Adaptive Feature Integration
-  - [-1, 1, Conv, [256, 1, 1]]                     # 1x1 Conv layer
-  - [-1, 1, nn.Upsample, [None, 2, "nearest"]]     # Upsampling
-  - [3, 1, Conv, [256, 1, 1, None, 1, 1, False]]   # Conv layer (adjust index if needed)
-  - [[-2, -1], 1, Concat, [1]]                     # Concatenation
-  - [-1, 3, RepC3, [256]]                          # Repeated C3 module
-  - [-1, 1, Conv, [256, 1, 1]]                     # 1x1 Conv layer
-  - [-1, 1, nn.Upsample, [None, 2, "nearest"]]     # Upsampling
-  - [2, 1, Conv, [256, 1, 1, None, 1, 1, False]]   # Conv layer
-  - [[-2, -1], 1, Concat, [1]]                     # Concatenation (Cat backbone P4)
-  - [-1, 3, RepC3, [256]]                          # Repeated C3 module (X3)
-  - [-1, 1, Conv, [256, 3, 2]]                     # Downsampling Conv
-  - [[-1, 12], 1, Concat, [1]]                     # Concatenation (Cat Y4)
-  - [-1, 3, RepC3, [256]]                          # Repeated C3 module (F4)
-  - [-1, 1, Conv, [256, 3, 2]]                     # Downsampling Conv
-  - [[-1, 7], 1, Concat, [1]]                      # Concatenation (Cat Y5)
-  - [-1, 3, RepC3, [256]]                          # Repeated C3 module (F5)
-  - [[16, 19, 22], 1, RTDETRDecoder, [nc]]         # Detection layers (P3, P4, P5)
-
-
-head:
-  # [from, repeats, module, args]
-  - [-1, 1, Conv, [256, 1, 1, None, 1, 1, False]]  # Head layers
-  - [-1, 1, AIFI, [1024, 8]]                       # Adaptive Feature Integration
-  - [-1, 1, Conv, [256, 1, 1]]                     # 1x1 Conv layer
-  - [-1, 1, nn.Upsample, [None, 2, "nearest"]]     # Upsampling
-  - [3, 1, Conv, [256, 1, 1, None, 1, 1, False]]   # Conv layer (adjust index if needed)
-  - [[-2, -1], 1, Concat, [1]]                     # Concatenation
-  - [-1, 3, RepC3, [256]]                          # Repeated C3 module
-  - [-1, 1, Conv, [256, 1, 1]]                     # 1x1 Conv layer
-  - [-1, 1, nn.Upsample, [None, 2, "nearest"]]     # Upsampling
-  - [2, 1, Conv, [256, 1, 1, None, 1, 1, False]]   # Conv layer
-  - [[-2, -1], 1, Concat, [1]]                     # Concatenation (Cat backbone P4)
-  - [-1, 3, RepC3, [256]]                          # Repeated C3 module (X3)
-  - [-1, 1, Conv, [256, 3, 2]]                     # Downsampling Conv
-  - [[-1, 12], 1, Concat, [1]]                     # Concatenation (Cat Y4)
-  - [-1, 3, RepC3, [256]]                          # Repeated C3 module (F4)
-  - [-1, 1, Conv, [256, 3, 2]]                     # Downsampling Conv
-  - [[-1, 7], 1, Concat, [1]]                      # Concatenation (Cat Y5)
-  - [-1, 3, RepC3, [256]]                          # Repeated C3 module (F5)
-  - [[16, 19, 22], 1, RTDETRDecoder, [nc]]         # Detection layers (P3, P4, P5)
+  - [-1, 1, AIFI, [1024, 8]]
+  - [-1, 1, Conv, [256, 1, 1]]
+  - [-1, 1, nn.Upsample, [None, 2, "nearest"]]
+  - [3, 1, Conv, [256, 1, 1, None, 1, 1, False]]  # Adjust the index if needed
+  - [[-2, -1], 1, Concat, [1]]
+  - [-1, 3, RepC3, [256]]
+  - [-1, 1, Conv, [256, 1, 1]]
+  - [-1, 1, nn.Upsample, [None, 2, "nearest"]]
+  - [2, 1, Conv, [256, 1, 1, None, 1, 1, False]]
+  - [[-2, -1], 1, Concat, [1]]  # Cat backbone P4
+  - [-1, 3, RepC3, [256]]  # X3 (16), fpn_blocks.1
+  - [-1, 1, Conv, [256, 3, 2]]  # 17, downsample_convs.0
+  - [[-1, 12], 1, Concat, [1]]  # Cat Y4
+  - [-1, 3, RepC3, [256]]  # F4 (19), pan_blocks.0
+  - [-1, 1, Conv, [256, 3, 2]]  # 20, downsample_convs.1
+  - [[-1, 7], 1, Concat, [1]]  # Cat Y5
+  - [-1, 3, RepC3, [256]]  # F5 (22), pan_blocks.1
+  - [[16, 19, 22], 1, RTDETRDecoder, [nc]]  # Detect(P3, P4, P5)

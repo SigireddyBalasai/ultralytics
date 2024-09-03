@@ -952,15 +952,28 @@ import torch
 import torch.nn as nn
 import torchvision.models as models
 
-class MobileNetLayer(nn.Module):
-    def __init__(self, out_channels, block_num, stride=1):
-        super(MobileNetLayer, self).__init__()
-        mobilenet = models.mobilenet_v2(pretrained=True).features
-        self.block = mobilenet[:block_num]
-        self.conv = nn.Conv2d(self.block.out_channels, out_channels, kernel_size=1, stride=stride)
-        self.stride = stride
+import torch
+import torch.nn as nn
+import torchvision.models as models
+
+class MobileNetBackbone(nn.Module):
+    def __init__(self, pretrained=True):
+        super(MobileNetBackbone, self).__init__()
+        mobilenet = models.mobilenet_v2(pretrained=pretrained).features
+        self.backbone = nn.ModuleDict({
+            '0': mobilenet[:1],  # First block
+            '1': mobilenet[1:2],  # Second block
+            '2': mobilenet[2:3],  # Third block
+            '3': mobilenet[3:4],  # Fourth block
+            '4': mobilenet[4:5],  # Fifth block
+            '5': mobilenet[5:6],  # Sixth block
+            '6': mobilenet[6:7],  # Seventh block
+            '7': mobilenet[7:]    # Eighth block
+        })
 
     def forward(self, x):
-        x = self.block(x)
-        x = self.conv(x)
-        return x
+        outputs = {}
+        for key, layer in self.backbone.items():
+            x = layer(x)
+            outputs[key] = x
+        return outputs

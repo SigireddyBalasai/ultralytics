@@ -53,7 +53,7 @@ from .block import (
     RepVGGDW,
     ResNetLayer,
     SCDown,
-    MobileNetLayer,
+    MobileNetBackbone,
 )
 from .conv import (
     CBAM,
@@ -151,5 +151,5 @@ __all__ = (
     "Attention",
     "PSA",
     "SCDown",
-    "MobileNetLayer",
+    "MobileNetBackbone",
 )
