@@ -968,7 +968,7 @@ class MobileNetBackbone(nn.Module):
             '4': mobilenet[4:5],  # Fifth block
             '5': mobilenet[5:6],  # Sixth block
             '6': mobilenet[6:7],  # Seventh block
-            '7': mobilenet[7:]    # Eighth block
+            '7': mobilenet[7:8]    # Eighth block
         })
 
     def forward(self, x):
