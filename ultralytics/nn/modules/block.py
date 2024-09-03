@@ -975,5 +975,6 @@ class MobileNetBackbone(nn.Module):
         outputs = {}
         for key, layer in self.backbone.items():
             x = layer(x)
+            print(f"key is {key} and shape is {x}")
             outputs[key] = x
         return outputs
