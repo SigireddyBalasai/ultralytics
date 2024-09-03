@@ -3,11 +3,9 @@ nc: 80  # number of classes
 scales:  # model compound scaling constants
   l: [1.00, 1.00, 1024]
 
-backbone:
-  type: resnet18
+backbone: resnet18
   pretrained: true
-  out_features: [2, 3, 4]
-  
+
 
 head:
   - [ -1, 1, Conv, [256, 1, 1, None, 1, 1, False] ]  # 5
