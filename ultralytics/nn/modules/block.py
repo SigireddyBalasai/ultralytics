@@ -962,7 +962,7 @@ class MobileNetBlock(nn.Module):
         self.pw1 = Conv(c1, c3, k=1, s=1, act=True)
         
         # Depthwise convolution (applies convolution to each channel independently)
-        self.dw = Conv(c3, c3, k=3, s=s, p=1, groups=c3, act=True)
+        self.dw = Conv(c3, c3, k=3, s=s, p=1, act=True)
         
         # Pointwise convolution to reduce to output channels
         self.pw2 = Conv(c3, c2, k=1, act=False)
