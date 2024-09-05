@@ -352,6 +352,9 @@ class MobileNetBlock(nn.Module):
     def forward(self, x):
         """Applies forward pass through MobileNetV2 block."""
         out = self.conv1(x)
+        print(f"first conv shape is {x.shape}")
         out = self.conv2(out)
+        print(f"second conv shape is {x.shape}")
         out = self.conv3(out)
+        print(out.shape)
         return out
