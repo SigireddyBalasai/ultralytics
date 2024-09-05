@@ -53,7 +53,7 @@ from .block import (
     RepVGGDW,
     ResNetLayer,
     SCDown,
-    MobileNetBackbone,
+    MobileNetLayer,
 )
 from .conv import (
     CBAM,
