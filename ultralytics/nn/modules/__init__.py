@@ -54,6 +54,7 @@ from .block import (
     ResNetLayer,
     SCDown,
     MobileNetLayer,
+    MobileNetBlock,
 )
 from .conv import (
     CBAM,
@@ -152,4 +153,5 @@ __all__ = (
     "PSA",
     "SCDown",
     "MobileNetBackbone",
+    "MobileNetBlock"
 )

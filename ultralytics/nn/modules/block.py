@@ -47,6 +47,7 @@ __all__ = (
     "PSA",
     "SCDown",
     "MobileNetLayer",
+    "MobileNetBlock",
 )
 
 
