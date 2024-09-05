@@ -963,8 +963,8 @@ class MobileNetLayer(nn.Module):
                 Conv(c1, c2, k=7, s=2, p=3, act=True), nn.MaxPool2d(kernel_size=3, stride=2, padding=1)
             )
         else:
-            blocks = [MobileNetBlock(c1, c2, s, e=e)]
-            blocks.extend([MobileNetBlock(e * c2, c2, 1, e=e) for _ in range(n - 1)])
+            blocks = [MobileNetBlock(c1, c2, s, t=e)]
+            blocks.extend([MobileNetBlock(e * c2, c2, 1, t=e) for _ in range(n - 1)])
             self.layer = nn.Sequential(*blocks)
 
     def forward(self, x):
