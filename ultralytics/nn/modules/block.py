@@ -960,14 +960,14 @@ class MobileNetBlock(nn.Module):
 
         # Step 1: Pointwise convolution for expansion
         self.expand_conv = nn.Sequential(
-            nn.Conv2d(c1, c2, kernel_size=(1, 3), bias=False,padding='same'),
+            nn.Conv2d(c1, c2, kernel_size=(1, 3), bias=False, padding=(0, 1)),
             nn.BatchNorm2d(c2),
             nn.ReLU(inplace=True)
         )
         
         # Step 2: Depthwise convolution
         self.depthwise_conv = nn.Sequential(
-            nn.Conv2d(c2, c3, kernel_size=(3, 1), stride=s, groups=c2, bias=False,padding='same'),  # Depthwise
+            nn.Conv2d(c2, c3, kernel_size=(3, 1), stride=s, padding=(1, 0), groups=c2, bias=False),  # Depthwise
             nn.BatchNorm2d(c3),
             nn.ReLU(inplace=True)
         )
