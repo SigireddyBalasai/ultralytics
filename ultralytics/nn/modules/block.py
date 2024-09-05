@@ -967,23 +967,27 @@ class MobileNetBlock(nn.Module):
         
         # Step 2: Depthwise convolution
         self.depthwise_conv = nn.Sequential(
-            nn.Conv2d(c2, c3, kernel_size=(3, 1), stride=s, padding=(0, 0), groups=c2, bias=False),  # Depthwise
+            nn.Conv2d(c2, c3, kernel_size=(3, 1), stride=s, groups=c2, bias=False),  # Depthwise
             nn.BatchNorm2d(c3),
             nn.ReLU(inplace=True)
         )
         
         # Step 3: Pointwise convolution for projection
         self.project_conv = nn.Sequential(
-            nn.Conv2d(c3, c3, kernel_size=1, bias=False),
+            nn.Conv2d(c3, c3, kernel_size=(1,1), bias=False),
             nn.BatchNorm2d(c3)
             # No ReLU activation at this stage
         )
 
     def forward(self, x):
         """Forward pass through the MobileNet block."""
+        print(f"Input shape: {x.shape}")
         x = self.expand_conv(x)  # Expand input channels
+        print(f"Expanded shape: {x.shape}")
         x = self.depthwise_conv(x)  # Depthwise convolution
+        print(f"Depthwise shape: {x.shape}")
         x = self.project_conv(x)  # Project back to output channels
+        print(f"Output shape: {x.shape}")
         return x
 
 
