@@ -346,10 +346,16 @@ class MobileNetBlock(nn.Module):
         super().__init__()
         c_ = int(c1 * t)
         self.conv1 = Conv(c1, c_, 1, 1, act=True)
-        self.conv2 = Conv(c_, c_, 3, s, act=True)
+        self.conv2 = Conv(c_, c_, 3, s, p=1, act=True)
         self.use_res_connect = s == 1 and c1 == c2
-        self.conv3 = Conv(c_, c2, 1, 1, act=False)
+        if self.use_res_connect:
+            self.conv3 = nn.Identity()
+        else:
+            self.conv3 = Conv(c_, c2, 1, 1, act=False)
 
     def forward(self, x):
         """Applies forward pass through MobileNetV2 block."""
-        return self.conv3(self.conv2(self.conv1(x))) + x if self.use_res_connect else self.conv3(self.conv2(self.conv1(x)))
+        out = self.conv1(x)
+        out = self.conv2(out)
+        out = self.conv3(out)
+        return out + x if self.use_res_connect else out
