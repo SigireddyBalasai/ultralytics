@@ -954,7 +954,7 @@ class MobileNetBlock(nn.Module):
     """MobileNetV2 Block."""
 
     def __init__(self, c1, c2, s=1, e=4):
-                """Initializes MobileNetV2 Block with given input and output channels, stride and expansion factor.
+        """Initializes MobileNetV2 Block with given input and output channels, stride and expansion factor.
 
         Args:
             c1 (int): Number of input channels.
@@ -974,34 +974,6 @@ class MobileNetBlock(nn.Module):
     def forward(self, x):
         """Forward pass through the ResNet block."""
         return F.relu(self.cv4(self.cv3(self.cv2(self.cv1(x)))) + self.shortcut(x))
-
-
-class MobileNetBlock(nn.Module):
-    """MobileNetV2 Block."""
-
-    def __init__(self, c1, c2, s=1, e=1):
-        """Initializes MobileNetV2 Block with given input and output channels, stride and expansion factor.
-
-        Args:
-            c1 (int): Number of input channels.
-            c2 (int): Number of output channels.
-            s (int, optional): Stride value. Defaults to 1.
-            e (int, optional): Expansion factor. Defaults to 1.
-        """
-        """Initializes MobileNetV2 Block with given input and output channels, stride and expansion factor."""
-        super().__init__()
-        c3 = int(c2 * e)
-        self.conv1 = Conv(c1=c1, c2=c2, k=(1, 3))
-        self.conv2 = Conv(c1=c2, c2=c2, k=(3, 1))
-        self.conv3 = Conv(c1=c2, c2=c3, k=1)
-
-    def forward(self, x):
-        # print(f"block input shape is {x.shape}")
-        """Applies forward pass through MobileNetV2 block."""
-        out = self.conv1(x)
-        out = self.conv2(out)
-        out = self.conv3(out)
-        return out
 
 
 class MobileNetLayer(nn.Module):
