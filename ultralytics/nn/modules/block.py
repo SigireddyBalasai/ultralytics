@@ -970,6 +970,4 @@ class MobileNetLayer(nn.Module):
     def forward(self, x):
         print(f"Input shape: {x.shape}")
         """Forward pass through the MobileNet layer."""
-        layer_output= self.layer(x)
-        print(f"Output shape: {layer_output.shape}")
-        return layer_output
+        return self.layer(x)
