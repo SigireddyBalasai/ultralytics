@@ -7,7 +7,7 @@ import torch.nn.functional as F
 
 from ultralytics.utils.torch_utils import fuse_conv_and_bn
 
-from .conv import Conv, DWConv, GhostConv, LightConv, RepConv, autopad
+from .conv import Conv, DWConv, GhostConv, LightConv, RepConv, autopad,PWConv
 from .transformer import TransformerBlock
 
 __all__ = (
@@ -950,51 +950,31 @@ class SCDown(nn.Module):
         """
         return self.cv2(self.cv1(x))
 
-class MobileNetBlock(nn.Module):
-    """MobileNetV2 Block."""
-
-    def __init__(self, c1, c2, s=1, e=4):
-        """Initializes MobileNetV2 Block with given input and output channels, stride and expansion factor.
-
-        Args:
-            c1 (int): Number of input channels.
-            c2 (int): Number of output channels.
-            s (int, optional): Stride value. Defaults to 1.
-            e (int, optional): Expansion factor. Defaults to 1.
-        """
-        """Initializes MobileNetV2 Block with given input and output channels, stride and expansion factor."""
-        super().__init__()
-        c3 = e * c2
-        self.cv1 = Conv(c1, c2, k=1, s=1, act=True)
-        self.cv2 = Conv(c2, c2, k=(1,3), s=s, act=True)
-        self.cv3 = Conv(c2, c2, k=(3,1), s=s, act=True)
-        self.cv4 = Conv(c2, c3, k=1, act=False)
-
-    def forward(self, x):
-        """Forward pass through the ResNet block."""
-        return self.cv4(self.cv3(self.cv2(self.cv1(x))))
-
-
 class MobileNetLayer(nn.Module):
-    """Mobilenet layer with multiple Mobilenet blocks."""
+    """MobileNet layer with multiple blocks."""
 
-    def __init__(self, c1, c2, s=1, is_first=False, n=1, e=4):
-        """Initializes the MobileNetLayer with multiple blocks."""
+    def __init__(self, c1, c2, s=1, is_first=False, n=1, e=6):
+        """Initialize MobileNet layer."""
         super().__init__()
         self.is_first = is_first
 
         if self.is_first:
+            # The first layer with a larger kernel size and stride for downsampling
             self.layer = nn.Sequential(
-                Conv(c1, c2, k=7, s=2, p=3, act=True), nn.MaxPool2d(kernel_size=3, stride=2, padding=1)
+                nn.Conv2d(c1, c2, kernel_size=7, stride=2, padding=3, bias=False),
+                nn.BatchNorm2d(c2),
+                nn.ReLU(inplace=True),
+                nn.MaxPool2d(kernel_size=3, stride=2, padding=1)
             )
         else:
-            blocks = [MobileNetBlock(c1, c2, s, e=e)]
-            blocks.extend([MobileNetBlock(e * c2, c2, 1, e=e) for _ in range(n - 1)])
+            # Stack MobileNet blocks
+            blocks = [MobileNetBlock(c1, c2, s=s, e=e)]
+            blocks.extend([MobileNetBlock(c2, c2, s=1, e=e) for _ in range(n - 1)])
             self.layer = nn.Sequential(*blocks)
 
     def forward(self, x):
-        print(f"Input shape: {x.shape}")
         """Forward pass through the MobileNet layer."""
-        layer_output= self.layer(x)
+        print(f"Input shape: {x.shape}")
+        layer_output = self.layer(x)
         print(f"Output shape: {layer_output.shape}")
         return layer_output
