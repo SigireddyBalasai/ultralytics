@@ -342,19 +342,24 @@ class MobileNetBlock(nn.Module):
     """MobileNetV2 Block."""
 
     def __init__(self, c1, c2, s=1, t=1):
+        """Initializes MobileNetV2 Block with given input and output channels, stride and expansion factor.
+
+        Args:
+            c1 (int): Number of input channels.
+            c2 (int): Number of output channels.
+            s (int, optional): Stride value. Defaults to 1.
+            t (int, optional): Expansion factor. Defaults to 1.
+        """
         """Initializes MobileNetV2 Block with given input and output channels, stride and expansion factor."""
         super().__init__()
         c_ = int(c1 * t)
-        self.conv1 = Conv(c1, c_, 1, 1, act=True)
-        self.conv2 = Conv(c_, c_, 3, s, p=1, act=True)
-        self.conv3 = Conv(c_, c2, 1, 1, act=False)
+        self.conv1 = Conv(c1,c_,k=(1,3))
+        self.conv2 = Conv(c_, c2, k=(3,1), s=s, p=(1,0))
+        self.conv3 = Conv(c2, c2, k=1, s=1, act=False)
 
     def forward(self, x):
         """Applies forward pass through MobileNetV2 block."""
         out = self.conv1(x)
-        print(f"first conv shape is {x.shape}")
         out = self.conv2(out)
-        print(f"second conv shape is {x.shape}")
         out = self.conv3(out)
-        print(out.shape)
         return out
