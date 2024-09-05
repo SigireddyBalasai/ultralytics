@@ -968,6 +968,6 @@ class MobileNetLayer(nn.Module):
             self.layer = nn.Sequential(*blocks)
 
     def forward(self, x):
-        print(f"Input shape: {x.shape}")
+        # print(f"Input shape: {x.shape}")
         """Forward pass through the MobileNet layer."""
         return self.layer(x)
