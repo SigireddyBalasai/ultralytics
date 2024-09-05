@@ -401,8 +401,11 @@ class ResNetLayer(nn.Module):
             self.layer = nn.Sequential(*blocks)
 
     def forward(self, x):
-        """Forward pass through the ResNet layer."""
-        return self.layer(x)
+        print(f"Input shape: {x.shape}")
+        """Forward pass through the MobileNet layer."""
+        layer_output= self.layer(x)
+        print(f"Output shape: {layer_output.shape}")
+        return layer_output
 
 
 class MaxSigmoidAttnBlock(nn.Module):
