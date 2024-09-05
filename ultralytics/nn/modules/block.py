@@ -956,18 +956,18 @@ class MobileNetBlock(nn.Module):
     def __init__(self, c1, c2, s=1, e=6):
         """Initialize depthwise separable convolution block."""
         super().__init__()
-        c3 = e * c1  # Expansion multiplier
+        c3 = e * c2  # Expansion multiplier
 
         # Step 1: Pointwise convolution for expansion
         self.expand_conv = nn.Sequential(
-            nn.Conv2d(c1, c3, kernel_size=1, bias=False),
+            nn.Conv2d(c1, c3, kernel_size=(1, 3), bias=False),
             nn.BatchNorm2d(c3),
             nn.ReLU(inplace=True)
         )
         
         # Step 2: Depthwise convolution
         self.depthwise_conv = nn.Sequential(
-            nn.Conv2d(c3, c3, kernel_size=3, stride=s, padding=1, groups=c3, bias=False),  # Depthwise
+            nn.Conv2d(c3, c3, kernel_size=(3, 1), stride=s, padding=(1, 0), groups=c3, bias=False),  # Depthwise
             nn.BatchNorm2d(c3),
             nn.ReLU(inplace=True)
         )
