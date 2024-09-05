@@ -966,8 +966,8 @@ class MobileNetBlock(nn.Module):
         super().__init__()
         c3 = e * c2
         self.cv1 = Conv(c1, c2, k=1, s=1, act=True)
-        self.cv2 = Conv(c2, c2, k=(1,3), s=s, p=1, act=True)
-        self.cv3 = Conv(c2, c2, k=(3,1), s=s, p=1, act=True)
+        self.cv2 = Conv(c2, c2, k=(1,3), s=s, act=True)
+        self.cv3 = Conv(c2, c2, k=(3,1), s=s, act=True)
         self.cv4 = Conv(c2, c3, k=1, act=False)
 
     def forward(self, x):
