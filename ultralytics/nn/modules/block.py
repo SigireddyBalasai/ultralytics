@@ -966,8 +966,8 @@ class MobileNetBlock(nn.Module):
         super().__init__()
         c3 = int(c2 * e)
         self.conv1 = Conv(c1=c1, c2=c2, k=(1, 3))
-        self.conv2 = Conv(c1=c2, c2=c2, k=(3, 1), s=s, p=1)
-        self.conv3 = Conv(c1=c2, c2=c3, k=1, s=1)
+        self.conv2 = Conv(c1=c2, c2=c2, k=(3, 1))
+        self.conv3 = Conv(c1=c2, c2=c3, k=1)
 
     def forward(self, x):
         # print(f"block input shape is {x.shape}")
