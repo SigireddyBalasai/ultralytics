@@ -358,6 +358,7 @@ class MobileNetBlock(nn.Module):
         self.conv3 = nn.Conv2d(c2, c2, kernel_size=1, stride=1, bias=False)
 
     def forward(self, x):
+        print(f"block input shape is {x.shape}")
         """Applies forward pass through MobileNetV2 block."""
         out = self.conv1(x)
         out = self.conv2(out)
