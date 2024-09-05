@@ -950,9 +950,22 @@ class SCDown(nn.Module):
 
 
 
+class Conv(nn.Module):
+    """A simple convolutional block with optional activation."""
+    
+    def __init__(self, c1, c2, k=1, s=1, p=0, act=True):
+        super().__init__()
+        self.conv = nn.Conv2d(c1, c2, k, stride=s, padding=p, bias=False)
+        self.bn = nn.BatchNorm2d(c2)
+        self.act = nn.ReLU(inplace=True) if act else nn.Identity()
+
+    def forward(self, x):
+        return self.act(self.bn(self.conv(x)))
+
+
 class MobileNetBlock(nn.Module):
     """MobileNet block with depthwise separable convolutions."""
-
+    
     def __init__(self, c1, c2, s=1, e=4):
         """Initialize depthwise separable convolutions."""
         super().__init__()
@@ -961,18 +974,41 @@ class MobileNetBlock(nn.Module):
         # Pointwise convolution to expand channels
         self.pw1 = Conv(c1, c3, k=1, s=1, act=True)
         
-        # Depthwise convolution (applies convolution to each channel independently)
+        # Depthwise convolution
         self.dw = Conv(c3, c3, k=3, s=s, p=1, act=True)
         
         # Pointwise convolution to reduce to output channels
         self.pw2 = Conv(c3, c2, k=1, act=False)
         
-        # Shortcut connection if dimensions or stride don't match
+        # Shortcut connection
         self.shortcut = nn.Sequential(Conv(c1, c2, k=1, s=s, act=False)) if s != 1 or c1 != c2 else nn.Identity()
 
     def forward(self, x):
-        """Forward pass through the MobileNet block."""
-        return F.relu(self.pw2(self.dw(self.pw1(x))) + self.shortcut(x))
+        """Forward pass with shape printing."""
+        
+        print(f"Input shape: {x.shape}")
+        
+        # First pointwise convolution
+        x_pw1 = self.pw1(x)
+        print(f"After pw1 (expand): {x_pw1.shape}")
+        
+        # Depthwise convolution
+        x_dw = self.dw(x_pw1)
+        print(f"After dw (depthwise): {x_dw.shape}")
+        
+        # Second pointwise convolution
+        x_pw2 = self.pw2(x_dw)
+        print(f"After pw2 (reduce): {x_pw2.shape}")
+        
+        # Shortcut connection
+        x_shortcut = self.shortcut(x)
+        print(f"Shortcut shape: {x_shortcut.shape}")
+        
+        # Final output
+        out = F.relu(x_pw2 + x_shortcut)
+        print(f"Output shape: {out.shape}")
+        
+        return out
 
 class MobileNetLayer(nn.Module):
     """MobileNet layer with multiple MobileNet blocks."""
