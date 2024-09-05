@@ -366,46 +366,7 @@ class BottleneckCSP(nn.Module):
         return self.cv4(self.act(self.bn(torch.cat((y1, y2), 1))))
 
 
-class ResNetBlock(nn.Module):
-    """ResNet block with standard convolution layers."""
 
-    def __init__(self, c1, c2, s=1, e=4):
-        """Initialize convolution with given parameters."""
-        super().__init__()
-        c3 = e * c2
-        self.cv1 = Conv(c1, c2, k=1, s=1, act=True)
-        self.cv2 = Conv(c2, c2, k=3, s=s, p=1, act=True)
-        self.cv3 = Conv(c2, c3, k=1, act=False)
-        self.shortcut = nn.Sequential(Conv(c1, c3, k=1, s=s, act=False)) if s != 1 or c1 != c3 else nn.Identity()
-
-    def forward(self, x):
-        """Forward pass through the ResNet block."""
-        return F.relu(self.cv3(self.cv2(self.cv1(x))) + self.shortcut(x))
-
-
-class ResNetLayer(nn.Module):
-    """ResNet layer with multiple ResNet blocks."""
-
-    def __init__(self, c1, c2, s=1, is_first=False, n=1, e=4):
-        """Initializes the ResNetLayer given arguments."""
-        super().__init__()
-        self.is_first = is_first
-
-        if self.is_first:
-            self.layer = nn.Sequential(
-                Conv(c1, c2, k=7, s=2, p=3, act=True), nn.MaxPool2d(kernel_size=3, stride=2, padding=1)
-            )
-        else:
-            blocks = [ResNetBlock(c1, c2, s, e=e)]
-            blocks.extend([ResNetBlock(e * c2, c2, 1, e=e) for _ in range(n - 1)])
-            self.layer = nn.Sequential(*blocks)
-
-    def forward(self, x):
-        print(f"Input shape: {x.shape}")
-        """Forward pass through the MobileNet layer."""
-        layer_output= self.layer(x)
-        print(f"Output shape: {layer_output.shape}")
-        return layer_output
 
 
 class MaxSigmoidAttnBlock(nn.Module):
@@ -950,6 +911,47 @@ class SCDown(nn.Module):
         """
         return self.cv2(self.cv1(x))
 
+class ResNetBlock(nn.Module):
+    """ResNet block with standard convolution layers."""
+
+    def __init__(self, c1, c2, s=1, e=4):
+        """Initialize convolution with given parameters."""
+        super().__init__()
+        c3 = e * c2
+        self.cv1 = Conv(c1, c2, k=1, s=1, act=True)
+        self.cv2 = Conv(c2, c2, k=3, s=s, p=1, act=True)
+        self.cv3 = Conv(c2, c3, k=1, act=False)
+        self.shortcut = nn.Sequential(Conv(c1, c3, k=1, s=s, act=False)) if s != 1 or c1 != c3 else nn.Identity()
+
+    def forward(self, x):
+        """Forward pass through the ResNet block."""
+        return F.relu(self.cv3(self.cv2(self.cv1(x))) + self.shortcut(x))
+
+class ResNetLayer(nn.Module):
+    """ResNet layer with multiple ResNet blocks."""
+
+    def __init__(self, c1, c2, s=1, is_first=False, n=1, e=4):
+        """Initializes the ResNetLayer given arguments."""
+        super().__init__()
+        self.is_first = is_first
+
+        if self.is_first:
+            self.layer = nn.Sequential(
+                Conv(c1, c2, k=7, s=2, p=3, act=True), nn.MaxPool2d(kernel_size=3, stride=2, padding=1)
+            )
+        else:
+            blocks = [ResNetBlock(c1, c2, s, e=e)]
+            blocks.extend([ResNetBlock(e * c2, c2, 1, e=e) for _ in range(n - 1)])
+            self.layer = nn.Sequential(*blocks)
+
+    def forward(self, x):
+        print(f"Input shape: {x.shape}")
+        """Forward pass through the MobileNet layer."""
+        layer_output= self.layer(x)
+        print(f"Output shape: {layer_output.shape}")
+        return layer_output
+
+
 class MobileNetBlock(nn.Module):
     """MobileNet block using depthwise separable convolutions."""
 
@@ -960,34 +962,31 @@ class MobileNetBlock(nn.Module):
 
         # Step 1: Pointwise convolution for expansion
         self.expand_conv = nn.Sequential(
-            nn.Conv2d(c1, c2, kernel_size=(1, 3), bias=False, padding=(0, 1)),
+            nn.Conv2d(c1, c2, kernel_size=(1, 3), bias=False, padding=(0, 1),groups=1),
             nn.BatchNorm2d(c2),
             nn.ReLU(inplace=True)
         )
         
         # Step 2: Depthwise convolution
         self.depthwise_conv = nn.Sequential(
-            nn.Conv2d(c2, c3, kernel_size=(3, 1), stride=s, padding=(1, 0), groups=c2, bias=False),  # Depthwise
+            nn.Conv2d(c2, c2, kernel_size=(3, 1), stride=s, padding=(1, 0), groups=1, bias=False),  # Depthwise
             nn.BatchNorm2d(c3),
             nn.ReLU(inplace=True)
         )
         
         # Step 3: Pointwise convolution for projection
         self.project_conv = nn.Sequential(
-            nn.Conv2d(c3, c3, kernel_size=(1,1), bias=False),
+            nn.Conv2d(c2, c3, kernel_size=(1,1), bias=False,groups=1),
             nn.BatchNorm2d(c3)
             # No ReLU activation at this stage
         )
 
     def forward(self, x):
         """Forward pass through the MobileNet block."""
-        print(f"Input shape: {x.shape}")
         x = self.expand_conv(x)  # Expand input channels
-        print(f"Expanded shape: {x.shape}")
         x = self.depthwise_conv(x)  # Depthwise convolution
-        print(f"Depthwise shape: {x.shape}")
         x = self.project_conv(x)  # Project back to output channels
-        print(f"Output shape: {x.shape}")
+        x = F.relu(x)
         return x
 
 

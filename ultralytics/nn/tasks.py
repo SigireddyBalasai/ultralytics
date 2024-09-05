@@ -50,6 +50,7 @@ from ultralytics.nn.modules import (
     RepNCSPELAN4,
     RepVGGDW,
     ResNetLayer,
+    MobileNetLayer,
     RTDETRDecoder,
     SCDown,
     Segment,
@@ -922,7 +923,7 @@ def parse_model(d, ch, verbose=True):  # model_dict, input_channels(3)
             SPPF,
             DWConv,
             Focus,
-            BottleneckCSP,
+            BottleneckCSP,MobileNetBlock
             C1,
             C2,
             C2f,
@@ -964,7 +965,7 @@ def parse_model(d, ch, verbose=True):  # model_dict, input_channels(3)
             if m is HGBlock:
                 args.insert(4, n)  # number of repeats
                 n = 1
-        elif m is ResNetLayer:
+        elif m is in {ResNetLayer,MobileNetLayer}:
             c2 = args[1] if args[3] else args[1] * 4
         elif m is nn.BatchNorm2d:
             args = [ch[f]]
