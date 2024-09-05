@@ -953,6 +953,32 @@ class SCDown(nn.Module):
 class MobileNetBlock(nn.Module):
     """MobileNetV2 Block."""
 
+    def __init__(self, c1, c2, s=1, e=4):
+                """Initializes MobileNetV2 Block with given input and output channels, stride and expansion factor.
+
+        Args:
+            c1 (int): Number of input channels.
+            c2 (int): Number of output channels.
+            s (int, optional): Stride value. Defaults to 1.
+            e (int, optional): Expansion factor. Defaults to 1.
+        """
+        """Initializes MobileNetV2 Block with given input and output channels, stride and expansion factor."""
+        super().__init__()
+        c3 = e * c2
+        self.cv1 = Conv(c1, c2, k=1, s=1, act=True)
+        self.cv2 = Conv(c2, c2, k=(1,3), s=s, p=1, act=True)
+        self.cv3 = Conv(c2, c2, k=(3,1), s=s, p=1, act=True)
+        self.cv4 = Conv(c2, c3, k=1, act=False)
+        self.shortcut = nn.Sequential(Conv(c1, c3, k=1, s=s, act=False)) if s != 1 or c1 != c3 else nn.Identity()
+
+    def forward(self, x):
+        """Forward pass through the ResNet block."""
+        return F.relu(self.cv4(self.cv3(self.cv2(self.cv1(x)))) + self.shortcut(x))
+
+
+class MobileNetBlock(nn.Module):
+    """MobileNetV2 Block."""
+
     def __init__(self, c1, c2, s=1, e=1):
         """Initializes MobileNetV2 Block with given input and output channels, stride and expansion factor.
 
