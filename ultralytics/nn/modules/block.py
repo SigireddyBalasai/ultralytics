@@ -970,7 +970,9 @@ class MobileNetBlock(nn.Module):
     def forward(self, x):
         """Forward pass through the MobileNet block."""
         x = self.expand_conv(x)  # Expand
+        print(x.shape)
         x = self.depthwise_conv(x)  # Depthwise convolution
+        print(x.shape)
         x = self.project_conv(x)  # Project back to output channels
         return x
 
