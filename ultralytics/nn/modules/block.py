@@ -950,6 +950,30 @@ class SCDown(nn.Module):
         """
         return self.cv2(self.cv1(x))
 
+class MobileNetBlock(nn.Module):
+    """MobileNet block using depthwise separable convolutions."""
+
+    def __init__(self, c1, c2, s=1, e=6):
+        """Initialize depthwise separable convolution block."""
+        super().__init__()
+        c3 = e * c1  # Expansion multiplier
+
+        # Step 1: Pointwise convolution for expansion
+        self.expand_conv = PWConv(c1, c3, k=1, act=True)
+        
+        # Step 2: Depthwise convolution
+        self.depthwise_conv = DWConv(c3, c3, k=3, s=s, act=True)
+        
+        # Step 3: Pointwise convolution for projection
+        self.project_conv = PWConv(c3, c2, k=1, act=False)
+
+    def forward(self, x):
+        """Forward pass through the MobileNet block."""
+        x = self.expand_conv(x)  # Expand
+        x = self.depthwise_conv(x)  # Depthwise convolution
+        x = self.project_conv(x)  # Project back to output channels
+        return x
+
 class MobileNetLayer(nn.Module):
     """MobileNet layer with multiple blocks."""
 
