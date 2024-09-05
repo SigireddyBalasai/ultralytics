@@ -46,6 +46,7 @@ __all__ = (
     "Attention",
     "PSA",
     "SCDown",
+    "MobileNetLayer",
 )
 
 
@@ -948,52 +949,48 @@ class SCDown(nn.Module):
 
 
 
-import torch
-import torch.nn as nn
-import torchvision.models as models
 
-import torch
-import torch.nn as nn
-import torchvision.models as models
+class MobileNetBlock(nn.Module):
+    """MobileNet block with depthwise separable convolutions."""
 
-
-class MobileNetBackbone(nn.Module):
-    def __init__(self, pretrained=True):
-        super(MobileNetBackbone, self).__init__()
-        mobilenet = models.mobilenet_v2(pretrained=pretrained).features
+    def __init__(self, c1, c2, s=1, e=4):
+        """Initialize depthwise separable convolutions."""
+        super().__init__()
+        c3 = e * c2
         
-        self.backbone = nn.ModuleDict({
-            '0': mobilenet[:1],  # First block
-            '1': nn.Sequential(
-                mobilenet[1:2],
-                nn.Conv2d(in_channels=16, out_channels=64, kernel_size=3, stride=1, padding=1)
-            ),  # Second block with channel matching
-            '2': nn.Sequential(
-                mobilenet[2:3],
-                nn.Conv2d(in_channels=24, out_channels=128, kernel_size=3, stride=1, padding=1)
-            ),  # Third block with channel matching
-            '3': nn.Sequential(
-                mobilenet[3:4],
-                nn.Conv2d(in_channels=32, out_channels=256, kernel_size=3, stride=1, padding=1)
-            ),  # Fourth block with channel matching
-            '4': nn.Sequential(
-                mobilenet[4:5],
-                nn.Conv2d(in_channels=64, out_channels=512, kernel_size=3, stride=1, padding=1)
-            ),  # Fifth block with channel matching
-            '5': nn.Sequential(
-                mobilenet[5:6],
-                nn.Conv2d(in_channels=96, out_channels=1024, kernel_size=3, stride=1, padding=1)
-            ),  # Sixth block with channel matching
-            '6': nn.Sequential(
-                mobilenet[6:7],
-                nn.Conv2d(in_channels=160, out_channels=1024, kernel_size=3, stride=1, padding=1)
-            ),  # Seventh block with channel matching
-            '7': mobilenet[7:8]  # Eighth block, assuming no need for additional convolution
-        })
+        # Pointwise convolution to expand channels
+        self.pw1 = Conv(c1, c3, k=1, s=1, act=True)
+        
+        # Depthwise convolution (applies convolution to each channel independently)
+        self.dw = Conv(c3, c3, k=3, s=s, p=1, groups=c3, act=True)
+        
+        # Pointwise convolution to reduce to output channels
+        self.pw2 = Conv(c3, c2, k=1, act=False)
+        
+        # Shortcut connection if dimensions or stride don't match
+        self.shortcut = nn.Sequential(Conv(c1, c2, k=1, s=s, act=False)) if s != 1 or c1 != c2 else nn.Identity()
 
     def forward(self, x):
-        outputs = {}
-        for key, layer in self.backbone.items():
-            x = layer(x)
-            outputs[key] = x
-        return outputs
+        """Forward pass through the MobileNet block."""
+        return F.relu(self.pw2(self.dw(self.pw1(x))) + self.shortcut(x))
+
+class MobileNetLayer(nn.Module):
+    """MobileNet layer with multiple MobileNet blocks."""
+
+    def __init__(self, c1, c2, s=1, is_first=False, n=1, e=4):
+        """Initializes the MobileNetLayer with multiple blocks."""
+        super().__init__()
+        self.is_first = is_first
+        
+        if self.is_first:
+            self.layer = nn.Sequential(
+                Conv(c1, c2, k=7, s=2, p=3, act=True), nn.MaxPool2d(kernel_size=3, stride=2, padding=1)
+            )
+        else:
+            blocks = [MobileNetBlock(c1, c2, s, e=e)]
+            blocks.extend([MobileNetBlock(c2, c2, 1, e=e) for _ in range(n - 1)])
+            self.layer = nn.Sequential(*blocks)
+
+    def forward(self, x):
+        """Forward pass through the MobileNet layer."""
+        return self.layer(x)
