@@ -356,7 +356,7 @@ class MobileNetBlock(nn.Module):
         self.conv1 = nn.Conv2d(c1, c_, kernel_size=(1, 3))
         self.conv2 = nn.Conv2d(c_, c2, kernel_size=(3, 1), stride=s, padding=(1, 0))
         self.conv3 = nn.Conv2d(c2, c2, kernel_size=1, stride=1, bias=False)
-        self.pool = nn.AdaptiveAvgPool2d()
+        self.pool = nn.AvgPool2d(2)
 
     def forward(self, x):
         print(f"block input shape is {x.shape}")
