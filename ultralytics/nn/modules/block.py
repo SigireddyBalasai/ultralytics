@@ -965,10 +965,9 @@ class MobileNetBlock(nn.Module):
         """Initializes MobileNetV2 Block with given input and output channels, stride and expansion factor."""
         super().__init__()
         c3 = int(c2 * e)
-        self.conv1 = nn.Conv2d(c1, c2, kernel_size=(1, 3))
-        self.conv2 = nn.Conv2d(c2, c2, kernel_size=(3, 1), stride=s, padding=1)
-        self.conv3 = nn.Conv2d(c2, c3, kernel_size=1, stride=1, bias=False)
-        self.pool = nn.AvgPool2d(2)
+        self.conv1 = Conv(c1=c1, c2=c2, k=(1, 3))
+        self.conv2 = Conv(c1=c2, c2=c2, k=(3, 1), s=s, p=1)
+        self.conv3 = Conv(c1=c2, c2=c3, k=1, s=1)
 
     def forward(self, x):
         # print(f"block input shape is {x.shape}")
@@ -976,7 +975,6 @@ class MobileNetBlock(nn.Module):
         out = self.conv1(x)
         out = self.conv2(out)
         out = self.conv3(out)
-        # out = self.pool(out)
         return out
 
 
