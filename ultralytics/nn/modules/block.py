@@ -959,22 +959,33 @@ class MobileNetBlock(nn.Module):
         c3 = e * c1  # Expansion multiplier
 
         # Step 1: Pointwise convolution for expansion
-        self.expand_conv = PWConv(c1, c3, k=1, act=True)
+        self.expand_conv = nn.Sequential(
+            nn.Conv2d(c1, c3, kernel_size=1, bias=False),
+            nn.BatchNorm2d(c3),
+            nn.ReLU(inplace=True)
+        )
         
         # Step 2: Depthwise convolution
-        self.depthwise_conv = DWConv(c3, c3, k=3, s=s, act=True)
+        self.depthwise_conv = nn.Sequential(
+            nn.Conv2d(c3, c3, kernel_size=3, stride=s, padding=1, groups=c3, bias=False),  # Depthwise
+            nn.BatchNorm2d(c3),
+            nn.ReLU(inplace=True)
+        )
         
         # Step 3: Pointwise convolution for projection
-        self.project_conv = PWConv(c3, c2, k=1, act=False)
+        self.project_conv = nn.Sequential(
+            nn.Conv2d(c3, c2, kernel_size=1, bias=False),
+            nn.BatchNorm2d(c2)
+            # No ReLU activation at this stage
+        )
 
     def forward(self, x):
         """Forward pass through the MobileNet block."""
-        x = self.expand_conv(x)  # Expand
-        print(x.shape)
+        x = self.expand_conv(x)  # Expand input channels
         x = self.depthwise_conv(x)  # Depthwise convolution
-        print(x.shape)
         x = self.project_conv(x)  # Project back to output channels
         return x
+
 
 class MobileNetLayer(nn.Module):
     """MobileNet layer with multiple blocks."""
