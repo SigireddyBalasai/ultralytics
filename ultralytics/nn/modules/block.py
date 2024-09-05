@@ -971,7 +971,7 @@ class MobileNetBlock(nn.Module):
         self.pool = nn.AvgPool2d(2)
 
     def forward(self, x):
-        print(f"block input shape is {x.shape}")
+        # print(f"block input shape is {x.shape}")
         """Applies forward pass through MobileNetV2 block."""
         out = self.conv1(x)
         out = self.conv2(out)
