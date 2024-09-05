@@ -960,6 +960,7 @@ class MobileNetBlock(nn.Module):
         """Initialize depthwise separable convolution block."""
         super().__init__()
         c3 = e * c2  # Expansion multiplier
+        self.shortcut = nn.Sequential(Conv(c1, c3, k=1, s=s, act=False)) if s != 1 or c1 != c3 else nn.Identity()
 
         # Step 1: Pointwise convolution for expansion
         self.expand_conv = nn.Sequential(
@@ -984,9 +985,11 @@ class MobileNetBlock(nn.Module):
 
     def forward(self, x):
         """Forward pass through the MobileNet block."""
-        x = self.expand_conv(x)  # Expand input channels
-        x = self.depthwise_conv(x)  # Depthwise convolution
+        x1 = self.expand_conv(x)  # Expand input channels
+        x = self.depthwise_conv(x1)  # Depthwise convolution
         x = self.project_conv(x)  # Project back to output channels
+        x_ = self.shortcut(x1)
+        x = x + x_
         x = F.relu(x)
         return x
 
