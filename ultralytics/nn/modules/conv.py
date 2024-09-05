@@ -21,7 +21,7 @@ __all__ = (
     "CBAM",
     "Concat",
     "RepConv",
-    "MobilenetV2",
+    "MobileNetBlock",
 )
 
 
@@ -102,6 +102,12 @@ class LightConv(nn.Module):
 class DWConv(Conv):
     """Depth-wise convolution."""
 
+    def __init__(self, c1, c2, k=1, s=1, d=1, act=True):  # ch_in, ch_out, kernel, stride, dilation, activation
+        """Initialize Depth-wise convolution with given parameters."""
+        super().__init__(c1, c2, k, s, g=math.gcd(c1, c2), d=d, act=act)
+
+class PWConv(Conv):
+    """Point-wise convolution"""
     def __init__(self, c1, c2, k=1, s=1, d=1, act=True):  # ch_in, ch_out, kernel, stride, dilation, activation
         """Initialize Depth-wise convolution with given parameters."""
         super().__init__(c1, c2, k, s, g=math.gcd(c1, c2), d=d, act=act)
@@ -331,21 +337,19 @@ class Concat(nn.Module):
         """Forward pass for the YOLOv8 mask Proto module."""
         return torch.cat(x, self.d)
 
-class MobilenetConv(nn.Module):
-    """MobileNetV2 Convolutional layer."""
 
-    def __init__(self, c1, c2, k=3, s=1, p=None, g=1, act=True):
-        """Initializes MobileNetV2 Convolutional layer with given parameters."""
+class MobileNetBlock(nn.Module):
+    """MobileNetV2 Block."""
+
+    def __init__(self, c1, c2, s=1, t=1):
+        """Initializes MobileNetV2 Block with given input and output channels, stride and expansion factor."""
         super().__init__()
-        self.dw_conv = nn.Conv2d(c1, c1, k, s, autopad(k, p), groups=c1, bias=False)
-        self.pw_conv = nn.Conv2d(c1, c2, 1, 1, 0, bias=False)
-        self.bn = nn.BatchNorm2d(c2)
-        self.act = nn.SiLU() if act is True else act if isinstance(act, nn.Module) else nn.Identity()
+        c_ = int(c1 * t)
+        self.conv1 = Conv(c1, c_, 1, 1, act=True)
+        self.conv2 = Conv(c_, c_, 3, s, act=True)
+        self.use_res_connect = s == 1 and c1 == c2
+        self.conv3 = Conv(c_, c2, 1, 1, act=False)
 
     def forward(self, x):
-        """Applies depth-wise convolution, point-wise convolution, batch normalization and activation to input tensor."""
-        x = self.dw_conv(x)
-        x = self.pw_conv(x)
-        x = self.bn(x)
-        x = self.act(x)
-        return x
+        """Applies forward pass through MobileNetV2 block."""
+        return self.conv3(self.conv2(self.conv1(x))) + x if self.use_res_connect else self.conv3(self.conv2(self.conv1(x)))
