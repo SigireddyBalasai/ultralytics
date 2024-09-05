@@ -1019,10 +1019,14 @@ class MobileNetLayer(nn.Module):
     def __init__(self, c1, c2, s=1, is_first=False, n=1, e=4):
         """Initializes the MobileNetLayer with multiple blocks."""
         super().__init__()
-        self.is_first = is_first
-        blocks = [MobileNetBlock(c1, c2, s, e=e)]
-        blocks.extend([MobileNetBlock(c2, c2, 1, e=e) for _ in range(n - 1)])
-        self.layer = nn.Sequential(*blocks)
+        if self.is_first:
+            self.layer = nn.Sequential(
+                Conv(c1, c2, k=7, s=2, p=3, act=True), nn.MaxPool2d(kernel_size=3, stride=2, padding=1)
+            )
+        else:
+            blocks = [MobileNetBlock(c1, c2, s, e=e)]
+            blocks.extend([MobileNetBlock(e * c2, c2, 1, e=e) for _ in range(n - 1)])
+            self.layer = nn.Sequential(*blocks)
 
     def forward(self, x):
         print(f"Input shape: {x.shape}")
