@@ -969,11 +969,10 @@ class MobileNetBlock(nn.Module):
         self.cv2 = Conv(c2, c2, k=(1,3), s=s, p=1, act=True)
         self.cv3 = Conv(c2, c2, k=(3,1), s=s, p=1, act=True)
         self.cv4 = Conv(c2, c3, k=1, act=False)
-        self.shortcut = nn.Sequential(Conv(c1, c3, k=1, s=s, act=False)) if s != 1 or c1 != c3 else nn.Identity()
 
     def forward(self, x):
         """Forward pass through the ResNet block."""
-        return F.relu(self.cv4(self.cv3(self.cv2(self.cv1(x)))) + self.shortcut(x))
+        return self.cv4(self.cv3(self.cv2(self.cv1(x))))
 
 
 class MobileNetLayer(nn.Module):
