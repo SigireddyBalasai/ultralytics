@@ -946,10 +946,10 @@ class ResNetLayer(nn.Module):
             self.layer = nn.Sequential(*blocks)
 
     def forward(self, x):
-        print(f"Input shape: {x.shape}")
+        # print(f"Input shape: {x.shape}")
         """Forward pass through the MobileNet layer."""
         layer_output= self.layer(x)
-        print(f"Output shape: {layer_output.shape}")
+        # print(f"Output shape: {layer_output.shape}")
         return layer_output
 
 
