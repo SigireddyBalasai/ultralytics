@@ -338,31 +338,4 @@ class Concat(nn.Module):
         return torch.cat(x, self.d)
 
 
-class MobileNetBlock(nn.Module):
-    """MobileNetV2 Block."""
 
-    def __init__(self, c1, c2, s=1, t=1):
-        """Initializes MobileNetV2 Block with given input and output channels, stride and expansion factor.
-
-        Args:
-            c1 (int): Number of input channels.
-            c2 (int): Number of output channels.
-            s (int, optional): Stride value. Defaults to 1.
-            t (int, optional): Expansion factor. Defaults to 1.
-        """
-        """Initializes MobileNetV2 Block with given input and output channels, stride and expansion factor."""
-        super().__init__()
-        c3 = int(c2 * t)
-        self.conv1 = nn.Conv2d(c1, c2, kernel_size=(1, 3))
-        self.conv2 = nn.Conv2d(c2, c2, kernel_size=(3, 1), stride=s, padding=(1, 0))
-        self.conv3 = nn.Conv2d(c2, c3, kernel_size=1, stride=1, bias=False)
-        self.pool = nn.AvgPool2d(2)
-
-    def forward(self, x):
-        print(f"block input shape is {x.shape}")
-        """Applies forward pass through MobileNetV2 block."""
-        out = self.conv1(x)
-        out = self.conv2(out)
-        out = self.conv3(out)
-        out = self.pool(out)
-        return out

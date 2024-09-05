@@ -7,7 +7,7 @@ import torch.nn.functional as F
 
 from ultralytics.utils.torch_utils import fuse_conv_and_bn
 
-from .conv import Conv, DWConv, GhostConv, LightConv, RepConv, autopad,MobileNetBlock
+from .conv import Conv, DWConv, GhostConv, LightConv, RepConv, autopad
 from .transformer import TransformerBlock
 
 __all__ = (
@@ -950,9 +950,38 @@ class SCDown(nn.Module):
         """
         return self.cv2(self.cv1(x))
 
+class MobileNetBlock(nn.Module):
+    """MobileNetV2 Block."""
+
+    def __init__(self, c1, c2, s=1, e=1):
+        """Initializes MobileNetV2 Block with given input and output channels, stride and expansion factor.
+
+        Args:
+            c1 (int): Number of input channels.
+            c2 (int): Number of output channels.
+            s (int, optional): Stride value. Defaults to 1.
+            e (int, optional): Expansion factor. Defaults to 1.
+        """
+        """Initializes MobileNetV2 Block with given input and output channels, stride and expansion factor."""
+        super().__init__()
+        c3 = int(c2 * e)
+        self.conv1 = nn.Conv2d(c1, c2, kernel_size=(1, 3))
+        self.conv2 = nn.Conv2d(c2, c2, kernel_size=(3, 1), stride=s, padding=1)
+        self.conv3 = nn.Conv2d(c2, c3, kernel_size=1, stride=1, bias=False)
+        self.pool = nn.AvgPool2d(2)
+
+    def forward(self, x):
+        print(f"block input shape is {x.shape}")
+        """Applies forward pass through MobileNetV2 block."""
+        out = self.conv1(x)
+        out = self.conv2(out)
+        out = self.conv3(out)
+        out = self.pool(out)
+        return out
+
 
 class MobileNetLayer(nn.Module):
-    """MobileNet layer with multiple MobileNet blocks."""
+    """Mobilenet layer with multiple Mobilenet blocks."""
 
     def __init__(self, c1, c2, s=1, is_first=False, n=1, e=4):
         """Initializes the MobileNetLayer with multiple blocks."""
@@ -964,12 +993,13 @@ class MobileNetLayer(nn.Module):
                 Conv(c1, c2, k=7, s=2, p=3, act=True), nn.MaxPool2d(kernel_size=3, stride=2, padding=1)
             )
         else:
-            self.blocks = nn.ModuleList([MobileNetBlock(c1, c2, s, t=e) for _ in range(n)])
-            self.layer = nn.Sequential(*self.blocks)
+            blocks = [MobileNetBlock(c1, c2, s, e=e)]
+            blocks.extend([MobileNetBlock(e * c2, c2, 1, e=e) for _ in range(n - 1)])
+            self.layer = nn.Sequential(*blocks)
 
     def forward(self, x):
         print(f"Input shape: {x.shape}")
         """Forward pass through the MobileNet layer."""
-        output_ =  self.layer(x)
-        print(output_.shape)
-        return output_
+        layer_output= self.layer(x)
+        print(f"Output shape: {layer_output.shape}")
+        return layer_output
