@@ -967,7 +967,7 @@ class MobileNetBlock(nn.Module):
         
         # Step 2: Depthwise convolution
         self.depthwise_conv = nn.Sequential(
-            nn.Conv2d(c3, c3, kernel_size=(3, 1), stride=s, padding=(1, 0), groups=c3, bias=False),  # Depthwise
+            nn.Conv2d(c3, c3, kernel_size=(3, 1), stride=s, padding=(0, 0), groups=c3, bias=False),  # Depthwise
             nn.BatchNorm2d(c3),
             nn.ReLU(inplace=True)
         )
@@ -988,30 +988,25 @@ class MobileNetBlock(nn.Module):
 
 
 class MobileNetLayer(nn.Module):
-    """MobileNet layer with multiple blocks."""
+    """ResNet layer with multiple ResNet blocks."""
 
-    def __init__(self, c1, c2, s=1, is_first=False, n=1, e=6):
-        """Initialize MobileNet layer."""
+    def __init__(self, c1, c2, s=1, is_first=False, n=1, e=4):
+        """Initializes the ResNetLayer given arguments."""
         super().__init__()
         self.is_first = is_first
 
         if self.is_first:
-            # The first layer with a larger kernel size and stride for downsampling
             self.layer = nn.Sequential(
-                nn.Conv2d(c1, c2, kernel_size=7, stride=2, padding=3, bias=False),
-                nn.BatchNorm2d(c2),
-                nn.ReLU(inplace=True),
-                nn.MaxPool2d(kernel_size=3, stride=2, padding=1)
+                Conv(c1, c2, k=7, s=2, p=3, act=True), nn.MaxPool2d(kernel_size=3, stride=2, padding=1)
             )
         else:
-            # Stack MobileNet blocks
-            blocks = [MobileNetBlock(c1, c2, s=s, e=e)]
-            blocks.extend([MobileNetBlock(c2, c2, s=1, e=e) for _ in range(n - 1)])
+            blocks = [MobileNetBlock(c1, c2, s, e=e)]
+            blocks.extend([MobileNetBlock(e * c2, c2, 1, e=e) for _ in range(n - 1)])
             self.layer = nn.Sequential(*blocks)
 
     def forward(self, x):
-        """Forward pass through the MobileNet layer."""
         print(f"Input shape: {x.shape}")
-        layer_output = self.layer(x)
+        """Forward pass through the MobileNet layer."""
+        layer_output= self.layer(x)
         print(f"Output shape: {layer_output.shape}")
         return layer_output
