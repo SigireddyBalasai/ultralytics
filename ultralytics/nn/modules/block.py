@@ -986,27 +986,27 @@ class MobileNetBlock(nn.Module):
     def forward(self, x):
         """Forward pass with shape printing."""
         
-        print(f"Input shape: {x.shape}")
+        # print(f"Input shape: {x.shape}")
         
         # First pointwise convolution
         x_pw1 = self.pw1(x)
-        print(f"After pw1 (expand): {x_pw1.shape}")
+        # print(f"After pw1 (expand): {x_pw1.shape}")
         
         # Depthwise convolution
         x_dw = self.dw(x_pw1)
-        print(f"After dw (depthwise): {x_dw.shape}")
+        # print(f"After dw (depthwise): {x_dw.shape}")
         
         # Second pointwise convolution
         x_pw2 = self.pw2(x_dw)
-        print(f"After pw2 (reduce): {x_pw2.shape}")
+        # print(f"After pw2 (reduce): {x_pw2.shape}")
         
         # Shortcut connection
         x_shortcut = self.shortcut(x)
-        print(f"Shortcut shape: {x_shortcut.shape}")
+        # print(f"Shortcut shape: {x_shortcut.shape}")
         
         # Final output
         out = F.relu(x_pw2 + x_shortcut)
-        print(f"Output shape: {out.shape}")
+        # print(f"Output shape: {out.shape}")
         
         return out
 
@@ -1022,5 +1022,8 @@ class MobileNetLayer(nn.Module):
         self.layer = nn.Sequential(*blocks)
 
     def forward(self, x):
+        print(f"Input shape: {x.shape}")
         """Forward pass through the MobileNet layer."""
-        return self.layer(x)
+        layer_output= self.layer(x)
+        print(f"Output shape: {layer_output.shape}")
+        return layer_output
