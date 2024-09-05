@@ -967,7 +967,7 @@ class MobileNetBlock(nn.Module):
         
         # Step 2: Depthwise convolution
         self.depthwise_conv = nn.Sequential(
-            nn.Conv2d(c2, c3, kernel_size=(3, 1), stride=s, padding=(0, 0), groups=c3, bias=False),  # Depthwise
+            nn.Conv2d(c2, c3, kernel_size=(3, 1), stride=s, padding=(0, 0), groups=c2, bias=False),  # Depthwise
             nn.BatchNorm2d(c3),
             nn.ReLU(inplace=True)
         )
