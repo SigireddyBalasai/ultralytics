@@ -958,6 +958,7 @@ class MobileNetLayer(nn.Module):
         """Initializes the MobileNetLayer with multiple blocks."""
         super().__init__()
         self.is_first = is_first
+
         if self.is_first:
             self.layer = nn.Sequential(
                 Conv(c1, c2, k=7, s=2, p=3, act=True), nn.MaxPool2d(kernel_size=3, stride=2, padding=1)
